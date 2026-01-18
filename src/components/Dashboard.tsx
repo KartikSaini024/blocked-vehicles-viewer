@@ -290,7 +290,7 @@ export default function Dashboard({ cookies, onLogout }: DashboardProps) {
                     </div>
                 </div>
 
-                {/* Debug Trigger */}
+                {/* // Debug Trigger
                 <div className="flex justify-center mb-8">
                     <button
                         onClick={async () => {
@@ -314,7 +314,7 @@ export default function Dashboard({ cookies, onLogout }: DashboardProps) {
                     >
                         Diagnostic Tool
                     </button>
-                </div>
+                </div> */}
 
                 {/* Statistics Overview */}
                 {data.length > 0 && <StatsOverview data={data} />}

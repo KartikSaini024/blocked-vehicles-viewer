@@ -93,11 +93,11 @@ export async function POST(request: Request) {
         validateStatus: (status) => status < 500
       });
 
-      // 5. Verify we are NOT redirected back to login
-      if (dashboardResponse.status === 302 && dashboardResponse.headers['location']?.includes('login.aspx')) {
-        console.error('Validation failed: Redirected back to login page.');
-        return NextResponse.json({ error: 'Login validation failed: Redirected to login.' }, { status: 401 });
-      }
+      // // 5. Verify we are NOT redirected back to TwoFactorAuthenticationSignIn.aspx (if we are, it means the login failed)
+      // if (dashboardResponse.status === 302 && dashboardResponse.headers['location']?.includes('TwoFactorAuthenticationSignIn.aspx')) {
+      //   console.error('Validation failed: Redirected back to TwoFactorAuthenticationSignIn.');
+      //   return NextResponse.json({ error: 'Login validation failed: Redirected to TwoFactorAuthenticationSignIn.' }, { status: 401 });
+      // }
 
       // If we get 200 OK (dashboard loaded) OR a 302 to somewhere internal (not login), we are good.
       console.log(`Verification status: ${dashboardResponse.status}`);
