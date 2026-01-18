@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { format, addMonths } from 'date-fns';
 import { CATEGORIES, LOCATIONS } from '@/lib/constants';
 import VehicleList from './VehicleList';
+import StatsOverview from './StatsOverview';
+import DatePickerPopover from './DatePickerPopover';
 import { BlockedReservation } from '@/types';
 
 interface DashboardProps {
@@ -12,8 +14,8 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ cookies, onLogout }: DashboardProps) {
-    const [fromDate, setFromDate] = useState(format(new Date(), 'dd/MM/yyyy'));
-    const [toDate, setToDate] = useState(format(addMonths(new Date(), 1), 'dd/MM/yyyy'));
+    const [fromDate, setFromDate] = useState<Date | undefined>(new Date());
+    const [toDate, setToDate] = useState<Date | undefined>(addMonths(new Date(), 1));
     const [locationId, setLocationId] = useState(9); // Default Sydney
     const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
 
@@ -22,7 +24,7 @@ export default function Dashboard({ cookies, onLogout }: DashboardProps) {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        setSelectedCategories([47]); // Default to Van
+        setSelectedCategories([]); // Default to None
     }, []);
 
     const handleFetch = async () => {
@@ -34,8 +36,8 @@ export default function Dashboard({ cookies, onLogout }: DashboardProps) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     cookies,
-                    fromDate,
-                    toDate,
+                    fromDate: fromDate ? format(fromDate, 'dd/MM/yyyy') : '',
+                    toDate: toDate ? format(toDate, 'dd/MM/yyyy') : '',
                     locationId,
                     categoryIds: selectedCategories.length > 0 ? selectedCategories : CATEGORIES.map(c => c.id)
                 })
@@ -83,6 +85,8 @@ export default function Dashboard({ cookies, onLogout }: DashboardProps) {
 
     const [sortOption, setSortOption] = useState<'date-asc' | 'date-desc' | 'days-asc' | 'days-desc'>('date-asc');
 
+    const [viewMode, setViewMode] = useState<'cards' | 'tiles'>('cards');
+
     const handleSort = (option: string) => {
         setSortOption(option as any);
     };
@@ -124,46 +128,77 @@ export default function Dashboard({ cookies, onLogout }: DashboardProps) {
     });
 
     return (
-        <div className="min-h-screen pb-20">
+        <div className="min-h-screen bg-slate-950 text-slate-200 selection:bg-indigo-500/30">
+            {/* Ambient Background Glow */}
+            <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-500/10 rounded-full blur-[100px]" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-500/10 rounded-full blur-[100px]" />
+            </div>
+
             {/* Header */}
-            <header className="bg-slate-900/40 backdrop-blur-xl border-b border-white/5 sticky top-0 z-50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
-                            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <header className="sticky top-0 z-50 backdrop-blur-xl border-b border-white/5 bg-slate-950/80">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-indigo-800 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                             </svg>
                         </div>
-                        <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
-                            Blocked Vehicles
-                        </h1>
+                        <div>
+                            <h1 className="text-xl font-bold text-white tracking-tight">Blocked Vehicles</h1>
+                            <p className="text-xs text-slate-400 font-medium">Fleet Maintenance Overview</p>
+                        </div>
                     </div>
-                    <button
-                        onClick={onLogout}
-                        className="px-4 py-2 text-sm font-medium text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors flex items-center gap-2"
-                    >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                        </svg>
-                        Sign Out
-                    </button>
+                    <div className="flex items-center gap-4">
+                        {/* View Toggle */}
+                        <div className="bg-slate-900 border border-slate-700 rounded-lg p-1 flex">
+                            <button
+                                onClick={() => setViewMode('cards')}
+                                className={`p-1.5 rounded transition-all ${viewMode === 'cards' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                                title="Card View"
+                            >
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                                </svg>
+                            </button>
+                            <button
+                                onClick={() => setViewMode('tiles')}
+                                className={`p-1.5 rounded transition-all ${viewMode === 'tiles' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                                title="Tile View"
+                            >
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                                </svg>
+                            </button>
+                        </div>
+                        <button
+                            onClick={onLogout}
+                            className="px-4 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all flex items-center gap-2 group"
+                        >
+                            Sign Out
+                            <svg className="w-4 h-4 text-slate-500 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </header>
 
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
 
-                {/* Filters Panel */}
-                {/* Filters Panel - Increased Contrast */}
-                <div className="bg-slate-900 border border-slate-700 shadow-2xl rounded-2xl p-6 mb-8">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                        {/* Region 1: Date & Location */}
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Location</label>
+
+                {/* Main Filter & Control Bar */}
+                <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-2xl rounded-2xl p-1 mb-8">
+                    <div className="p-5 grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        {/* Filters Region */}
+                        <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {/* Location */}
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest pl-1">Location</label>
                                 <select
                                     value={locationId}
                                     onChange={(e) => setLocationId(Number(e.target.value))}
-                                    className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    className="w-full bg-slate-950 border border-slate-700/50 rounded-xl px-3 py-2.5 text-sm text-white focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all hover:border-indigo-500/30"
                                 >
                                     {LOCATIONS.map(loc => (
                                         <option key={loc.id} value={loc.id}>{loc.name}</option>
@@ -171,124 +206,129 @@ export default function Dashboard({ cookies, onLogout }: DashboardProps) {
                                 </select>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">From</label>
-                                    <input
-                                        type="text"
-                                        value={fromDate}
-                                        onChange={(e) => setFromDate(e.target.value)}
-                                        className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 outline-none"
-                                        placeholder="dd/MM/yyyy"
+                            {/* Date Range */}
+                            <div className="col-span-2 flex gap-4">
+                                <div className="flex-1">
+                                    <DatePickerPopover
+                                        label="From Date"
+                                        date={fromDate}
+                                        setDate={setFromDate}
                                     />
                                 </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">To</label>
-                                    <input
-                                        type="text"
-                                        value={toDate}
-                                        onChange={(e) => setToDate(e.target.value)}
-                                        className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 outline-none"
-                                        placeholder="dd/MM/yyyy"
+                                <div className="flex-1">
+                                    <DatePickerPopover
+                                        label="To Date"
+                                        date={toDate}
+                                        setDate={setToDate}
                                     />
                                 </div>
                             </div>
                         </div>
 
-                        {/* Region 2: Categories */}
-                        <div className="md:col-span-2 flex flex-col">
-                            <div className="flex justify-between items-center mb-2">
-                                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">Vehicle Categories</label>
-                                <div className="flex gap-2 text-xs">
-                                    <button onClick={selectAllCategories} className="text-indigo-300 hover:text-indigo-200 font-medium">Select All</button>
-                                    <span className="text-slate-500">|</span>
-                                    <button onClick={clearCategories} className="text-slate-400 hover:text-white font-medium">Clear</button>
+                        {/* Action Region */}
+                        <div className="lg:col-span-4 flex flex-col justify-end gap-3">
+                            {/* Category Summary */}
+                            <div className="flex justify-between items-center px-1">
+                                <span className="text-xs text-slate-400 font-medium">categories: <span className="text-white">{selectedCategories.length === 0 ? 'All' : selectedCategories.length}</span></span>
+                                <div className="flex gap-3 text-[10px] font-bold uppercase tracking-wide">
+                                    <button onClick={selectAllCategories} className="text-indigo-400 hover:text-indigo-300 transition-colors">Select All</button>
+                                    <button onClick={clearCategories} className="text-slate-500 hover:text-slate-300 transition-colors">Clear</button>
                                 </div>
                             </div>
-                            <div className="bg-slate-800 border border-slate-600 rounded-lg p-3 flex-1 overflow-y-auto max-h-[160px] custom-scrollbar grid grid-cols-2 sm:grid-cols-3 gap-2">
-                                {CATEGORIES.map(cat => (
-                                    <label key={cat.id} className="flex items-center gap-2 cursor-pointer group hover:bg-slate-700/50 p-1 rounded transition-colors">
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedCategories.includes(cat.id)}
-                                            onChange={() => handleCategoryToggle(cat.id)}
-                                            className="rounded border-slate-500 bg-slate-700 text-indigo-500 focus:ring-offset-slate-900 focus:ring-indigo-500"
-                                        />
-                                        <span className={`text-sm truncate transition-colors ${selectedCategories.includes(cat.id) ? 'text-white font-medium' : 'text-slate-400 group-hover:text-slate-200'}`}>
-                                            {cat.name}
-                                        </span>
-                                    </label>
-                                ))}
+
+                            <div className="flex gap-2">
+                                <select
+                                    value={sortOption}
+                                    onChange={(e) => handleSort(e.target.value)}
+                                    className="bg-slate-950 border border-slate-700/50 rounded-xl px-3 py-2.5 text-sm text-slate-300 focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all hover:border-indigo-500/30 w-1/3"
+                                >
+                                    <option value="date-asc">Pickup: Earliest</option>
+                                    <option value="days-desc">Duration: Longest</option>
+                                    <option value="days-asc">Duration: Shortest</option>
+                                </select>
+                                <button
+                                    onClick={handleFetch}
+                                    disabled={loading}
+                                    className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-xl font-bold text-sm shadow-xl shadow-indigo-500/20 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                >
+                                    {loading ? (
+                                        <>
+                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                            Searching...
+                                        </>
+                                    ) : (
+                                        'Search'
+                                    )}
+                                </button>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex justify-between items-center pt-4 border-t border-slate-700">
-                        {/* Sort Control */}
-                        <div className="flex items-center gap-3">
-                            <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">Sort By:</label>
-                            <select
-                                value={sortOption}
-                                onChange={(e) => handleSort(e.target.value)}
-                                className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 outline-none"
-                            >
-                                <option value="date-asc">Block Date: Earliest</option>
-                                <option value="days-desc">Duration: Longest</option>
-                                <option value="days-asc">Duration: Shortest</option>
-                            </select>
+                    {/* Expanded Category Selector (Collapsible/Scrollable) */}
+                    <div className="border-t border-white/5 bg-slate-950/30 p-4 rounded-b-xl max-h-[140px] overflow-y-auto custom-scrollbar">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2">
+                            {CATEGORIES.map(cat => (
+                                <label key={cat.id} className={`
+                                    flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all border text-xs font-medium
+                                    ${selectedCategories.includes(cat.id)
+                                        ? 'bg-indigo-600/20 border-indigo-500/50 text-indigo-200'
+                                        : 'bg-slate-900/50 border-transparent text-slate-500 hover:bg-slate-800 hover:text-slate-300'}
+                                `}>
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedCategories.includes(cat.id)}
+                                        onChange={() => handleCategoryToggle(cat.id)}
+                                        className="hidden" // Hiding default checkbox for custom style
+                                    />
+                                    <div className={`w-3 h-3 rounded-full border flex items-center justify-center flex-shrink-0 transition-colors ${selectedCategories.includes(cat.id) ? 'bg-indigo-500 border-indigo-500' : 'border-slate-600'}`}>
+                                        {selectedCategories.includes(cat.id) && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
+                                    </div>
+                                    <span className="truncate">{cat.name}</span>
+                                </label>
+                            ))}
                         </div>
-
-                        <button
-                            onClick={handleFetch}
-                            disabled={loading}
-                            className="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-2.5 rounded-lg font-medium transition-all shadow-lg shadow-indigo-500/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                        >
-                            {loading ? (
-                                <>
-                                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg>
-                                    Searching...
-                                </>
-                            ) : (
-                                'Find Blocked Vehicles'
-                            )}
-                        </button>
-                    </div>
-
-                    <div className="mt-4 border-t border-slate-700 pt-4 text-center">
-                        <button
-                            onClick={async () => {
-                                console.log('Starting Debug Fetch...');
-                                try {
-                                    // The user requested test URL
-                                    const testUrl = `https://bookings.rentalcarmanager.com/bookingsheet/loadcardata.ashx?mode=availability&catid=91&rowno=1&from=14/01/2026&to=15/02/2026&locid=9&ctypeid=0&q=1768550300743`;
-                                    const res = await fetch('/api/test', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({ cookies, url: testUrl })
-                                    });
-                                    const result = await res.json();
-                                    console.log('DEBUG FETCH RESULT:', result);
-                                    alert('Check browser console for debug result');
-                                } catch (e) {
-                                    console.error('Debug fetch failed', e);
-                                    alert('Debug fetch failed');
-                                }
-                            }}
-                            className="text-xs text-slate-500 hover:text-slate-300 underline"
-                        >
-                            Run Diagnostic Test (Check Console)
-                        </button>
                     </div>
                 </div>
 
+                {/* Debug Trigger */}
+                <div className="flex justify-center mb-8">
+                    <button
+                        onClick={async () => {
+                            console.log('Starting Debug Fetch...');
+                            try {
+                                const testUrl = `https://bookings.rentalcarmanager.com/bookingsheet/loadcardata.ashx?mode=availability&catid=91&rowno=1&from=14/01/2026&to=15/02/2026&locid=9&ctypeid=0&q=1768550300743`;
+                                const res = await fetch('/api/test', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ cookies, url: testUrl })
+                                });
+                                const result = await res.json();
+                                console.log('DEBUG FETCH RESULT:', result);
+                                alert('Check browser console for debug result');
+                            } catch (e) {
+                                console.error('Debug fetch failed', e);
+                                alert('Debug fetch failed');
+                            }
+                        }}
+                        className="text-[10px] uppercase tracking-widest text-slate-600 hover:text-indigo-400 transition-colors font-bold"
+                    >
+                        Diagnostic Tool
+                    </button>
+                </div>
+
+                {/* Statistics Overview */}
+                {data.length > 0 && <StatsOverview data={data} />}
+
+
                 {/* Results */}
                 {error && (
-                    <div className="mb-8 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-200">
+                    <div className="mb-8 p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-200 flex items-center gap-3">
+                        <svg className="w-5 h-5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         {error}
                     </div>
                 )}
 
-                <VehicleList data={sortedData} loading={loading} />
+                <VehicleList data={sortedData} loading={loading} viewMode={viewMode} />
 
             </main>
         </div>

@@ -21,5 +21,6 @@ export interface BlockedReservation {
     aclastname: string; // Often holds the reason or name
     reservationtypeid: number; // 3 for maintenance
     isdonotmove: boolean;
+    categoryid?: number;
     carDetails?: CarDetails | null;
 }

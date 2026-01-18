@@ -59,18 +59,22 @@ export async function POST(request: Request) {
                     allCatBookings.push(...data.rcmbooking);
                 }
 
-                // Check for multiple rows
-                let numRows = 1;
+                // Calculate pagination based on totcars
+                let totalCars = 0;
                 if (data.rcmcardata && data.rcmcardata.length > 0) {
-                    numRows = data.rcmcardata[0].numofrows || 1;
+                    totalCars = data.rcmcardata[0].totcars || 0;
                 }
 
-                console.log(`Cat ${catId}: Detected ${numRows} rows.`);
+                console.log(`Cat ${catId}: Total Cars ${totalCars}`);
 
-                // Fetch remaining rows if any
-                if (numRows > 1) {
+                // Fetch remaining rows if needed
+                const PAGE_SIZE = 50;
+                if (totalCars > PAGE_SIZE) {
                     const rowPromises: Promise<any>[] = [];
-                    for (let r = 2; r <= numRows; r++) {
+
+                    // Start from 51, increment by 50
+                    for (let r = 51; r <= totalCars; r += PAGE_SIZE) {
+                        // console.log(`Cat ${catId}: Queueing row ${r}`); 
                         rowPromises.push(
                             axios.get(getUrl(r), {
                                 headers: {
@@ -92,7 +96,7 @@ export async function POST(request: Request) {
                     });
                 }
 
-                console.log(`Cat ${catId}: Total bookings across all rows: ${allCatBookings.length}`);
+                console.log(`Cat ${catId}: Finished fetching. Total booking entries: ${allCatBookings.length}`);
 
                 // Filter for reservationtypeid: 3 (Maintenance)
                 const rawBlocked = allCatBookings.filter((b: any) => b.reservationtypeid === 3);
@@ -144,8 +148,19 @@ export async function POST(request: Request) {
             }
         };
 
-        const promises = cats.map((id: number) => fetchCategory(id));
-        const allResults = await Promise.all(promises);
+        // Batch processing to avoid rate-limiting or network congestion
+        const BATCH_SIZE = 6;
+        const allResults: any[] = [];
+
+        for (let i = 0; i < cats.length; i += BATCH_SIZE) {
+            const batch = cats.slice(i, i + BATCH_SIZE);
+            console.log(`Processing batch ${Math.floor(i / BATCH_SIZE) + 1} of ${Math.ceil(cats.length / BATCH_SIZE)}...`);
+
+            const batchPromises = batch.map(id => fetchCategory(id));
+            const batchResults = await Promise.all(batchPromises);
+
+            allResults.push(...batchResults);
+        }
 
         // Flatten results
         const flatResults = allResults.flat();
