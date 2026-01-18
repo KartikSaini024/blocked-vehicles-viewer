@@ -48,6 +48,12 @@ export async function POST(request: Request) {
                     return [];
                 }
 
+                // Check if response is HTML (indicating session expired/login page)
+                if (typeof response.data === 'string' && (response.data.includes('<!DOCTYPE html>') || response.data.includes('<html'))) {
+                    console.error(`Cat ${catId}: Received HTML instead of JSON. Session likely expired.`);
+                    throw new Error('SESSION_EXPIRED');
+                }
+
                 // DEBUG: Log full JSON response
                 //console.log(`Cat ${catId} Row 1 FULL JSON:`);
                 //console.log(JSON.stringify(response.data, null, 2));
