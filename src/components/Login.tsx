@@ -40,7 +40,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
     };
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-200 selection:bg-indigo-500/30 flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-200 selection:bg-indigo-500/30 flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-300">
             {/* Ambient Background Glow */}
             <div className="fixed inset-0 pointer-events-none z-0">
                 <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-500/10 rounded-full blur-[100px]" />
@@ -50,49 +50,49 @@ export default function Login({ onLoginSuccess }: LoginProps) {
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-slate-900/60 backdrop-blur-xl border border-white/10 shadow-2xl w-full max-w-md p-8 rounded-2xl relative overflow-hidden z-10"
+                className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-xl dark:shadow-2xl w-full max-w-md p-8 rounded-2xl relative overflow-hidden z-10"
             >
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 animate-pulse" />
 
                 <div className="text-center mb-8">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-600 to-indigo-800 flex items-center justify-center shadow-lg shadow-indigo-500/20 mx-auto mb-6">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-700 dark:from-indigo-600 dark:to-indigo-800 flex items-center justify-center shadow-lg shadow-indigo-500/20 mx-auto mb-6">
                         <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                         </svg>
                     </div>
-                    <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">
+                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight">
                         Welcome Back
                     </h1>
-                    <p className="text-slate-400">Sign in to Rental Car Manager</p>
+                    <p className="text-slate-500 dark:text-slate-400">Sign in to Rental Car Manager</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {error && (
-                        <div className="p-3 text-sm text-rose-200 bg-rose-500/10 border border-rose-500/20 rounded-lg text-center flex items-center justify-center gap-2">
+                        <div className="p-3 text-sm text-rose-600 dark:text-rose-200 bg-rose-100 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 rounded-lg text-center flex items-center justify-center gap-2">
                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                             {error}
                         </div>
                     )}
 
                     <div>
-                        <label className="block text-xs font-bold text-indigo-300 uppercase tracking-widest mb-2 pl-1">Username</label>
+                        <label className="block text-xs font-bold text-indigo-600 dark:text-indigo-300 uppercase tracking-widest mb-2 pl-1">Username</label>
                         <input
                             type="text"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
-                            className="w-full bg-slate-950 border border-slate-700/50 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all hover:border-indigo-500/30"
+                            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700/50 rounded-xl px-4 py-3 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all hover:border-indigo-500/30"
                             placeholder="Enter your username"
                             required
                         />
                     </div>
 
                     <div>
-                        <label className="block text-xs font-bold text-indigo-300 uppercase tracking-widest mb-2 pl-1">Password</label>
+                        <label className="block text-xs font-bold text-indigo-600 dark:text-indigo-300 uppercase tracking-widest mb-2 pl-1">Password</label>
                         <input
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full bg-slate-950 border border-slate-700/50 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all hover:border-indigo-500/30"
+                            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700/50 rounded-xl px-4 py-3 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all hover:border-indigo-500/30"
                             placeholder="••••••••"
                             required
                         />
@@ -114,7 +114,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
                     </button>
                 </form>
 
-                <div className="mt-8 text-center text-xs text-slate-500">
+                <div className="mt-8 text-center text-xs text-slate-400 dark:text-slate-500">
                     <p>Protected by Request Proxy</p>
                 </div>
             </motion.div>

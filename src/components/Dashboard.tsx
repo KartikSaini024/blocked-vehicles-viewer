@@ -7,6 +7,7 @@ import VehicleList from './VehicleList';
 import StatsOverview from './StatsOverview';
 import DatePickerPopover from './DatePickerPopover';
 import { BlockedReservation } from '@/types';
+import { useTheme } from '@/context/ThemeContext';
 
 interface DashboardProps {
     cookies: string[];
@@ -14,6 +15,7 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ cookies, onLogout }: DashboardProps) {
+    const { theme, toggleTheme } = useTheme();
     const [fromDate, setFromDate] = useState<Date | undefined>(new Date());
     const [toDate, setToDate] = useState<Date | undefined>(addMonths(new Date(), 1));
     const [locationId, setLocationId] = useState(9); // Default Sydney
@@ -128,30 +130,47 @@ export default function Dashboard({ cookies, onLogout }: DashboardProps) {
     });
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-200 selection:bg-indigo-500/30">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-200 selection:bg-indigo-500/30 transition-colors duration-300">
             {/* Ambient Background Glow */}
-            <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+            <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-50 dark:opacity-100 transition-opacity">
                 <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-500/10 rounded-full blur-[100px]" />
                 <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-500/10 rounded-full blur-[100px]" />
             </div>
 
             {/* Header */}
-            <header className="sticky top-0 z-50 backdrop-blur-xl border-b border-white/5 bg-slate-950/80">
+            <header className="sticky top-0 z-50 backdrop-blur-xl border-b border-slate-200 dark:border-white/5 bg-white/70 dark:bg-slate-950/80 transition-colors duration-300">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-indigo-800 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-700 dark:from-indigo-600 dark:to-indigo-800 flex items-center justify-center shadow-lg shadow-indigo-500/20">
                             <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                             </svg>
                         </div>
                         <div>
-                            <h1 className="text-xl font-bold text-white tracking-tight">Blocked Vehicles</h1>
-                            <p className="text-xs text-slate-400 font-medium">Fleet Maintenance Overview</p>
+                            <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Blocked Vehicles</h1>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Fleet Maintenance Overview</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-4">
+                        {/* Theme Toggle */}
+                        <button
+                            onClick={toggleTheme}
+                            className="p-2 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                            title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+                        >
+                            {theme === 'light' ? (
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                                </svg>
+                            ) : (
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                                </svg>
+                            )}
+                        </button>
+
                         {/* View Toggle */}
-                        <div className="bg-slate-900 border border-slate-700 rounded-lg p-1 flex">
+                        <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-1 flex">
                             <button
                                 onClick={() => setViewMode('cards')}
                                 className={`p-1.5 rounded transition-all ${viewMode === 'cards' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
@@ -188,17 +207,17 @@ export default function Dashboard({ cookies, onLogout }: DashboardProps) {
 
 
                 {/* Main Filter & Control Bar */}
-                <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-2xl rounded-2xl p-1 mb-8">
+                <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-white/10 shadow-xl dark:shadow-2xl rounded-2xl p-1 mb-8 transition-colors duration-300">
                     <div className="p-5 grid grid-cols-1 lg:grid-cols-12 gap-6">
                         {/* Filters Region */}
                         <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-4">
                             {/* Location */}
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest pl-1">Location</label>
+                                <label className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest pl-1">Location</label>
                                 <select
                                     value={locationId}
                                     onChange={(e) => setLocationId(Number(e.target.value))}
-                                    className="w-full bg-slate-950 border border-slate-700/50 rounded-xl px-3 py-2.5 text-sm text-white focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all hover:border-indigo-500/30"
+                                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700/50 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all hover:border-indigo-500/30"
                                 >
                                     {LOCATIONS.map(loc => (
                                         <option key={loc.id} value={loc.id}>{loc.name}</option>
@@ -229,10 +248,10 @@ export default function Dashboard({ cookies, onLogout }: DashboardProps) {
                         <div className="lg:col-span-4 flex flex-col justify-end gap-3">
                             {/* Category Summary */}
                             <div className="flex justify-between items-center px-1">
-                                <span className="text-xs text-slate-400 font-medium">categories: <span className="text-white">{selectedCategories.length === 0 ? 'All' : selectedCategories.length}</span></span>
+                                <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">categories: <span className="text-slate-900 dark:text-white">{selectedCategories.length === 0 ? 'All' : selectedCategories.length}</span></span>
                                 <div className="flex gap-3 text-[10px] font-bold uppercase tracking-wide">
-                                    <button onClick={selectAllCategories} className="text-indigo-400 hover:text-indigo-300 transition-colors">Select All</button>
-                                    <button onClick={clearCategories} className="text-slate-500 hover:text-slate-300 transition-colors">Clear</button>
+                                    <button onClick={selectAllCategories} className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 transition-colors">Select All</button>
+                                    <button onClick={clearCategories} className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors">Clear</button>
                                 </div>
                             </div>
 
@@ -240,7 +259,7 @@ export default function Dashboard({ cookies, onLogout }: DashboardProps) {
                                 <select
                                     value={sortOption}
                                     onChange={(e) => handleSort(e.target.value)}
-                                    className="bg-slate-950 border border-slate-700/50 rounded-xl px-3 py-2.5 text-sm text-slate-300 focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all hover:border-indigo-500/30 w-1/3"
+                                    className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700/50 rounded-xl px-3 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all hover:border-indigo-500/30 w-1/3"
                                 >
                                     <option value="date-asc">Pickup: Earliest</option>
                                     <option value="days-desc">Duration: Longest</option>
@@ -265,14 +284,14 @@ export default function Dashboard({ cookies, onLogout }: DashboardProps) {
                     </div>
 
                     {/* Expanded Category Selector (Collapsible/Scrollable) */}
-                    <div className="border-t border-white/5 bg-slate-950/30 p-4 rounded-b-xl max-h-[140px] overflow-y-auto custom-scrollbar">
+                    <div className="border-t border-slate-200 dark:border-white/5 bg-slate-50/50 dark:bg-slate-950/30 p-4 rounded-b-xl max-h-[140px] overflow-y-auto custom-scrollbar">
                         <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2">
                             {CATEGORIES.map(cat => (
                                 <label key={cat.id} className={`
                                     flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all border text-xs font-medium
                                     ${selectedCategories.includes(cat.id)
-                                        ? 'bg-indigo-600/20 border-indigo-500/50 text-indigo-200'
-                                        : 'bg-slate-900/50 border-transparent text-slate-500 hover:bg-slate-800 hover:text-slate-300'}
+                                        ? 'bg-indigo-50 dark:bg-indigo-600/20 border-indigo-200 dark:border-indigo-500/50 text-indigo-700 dark:text-indigo-200'
+                                        : 'bg-white dark:bg-slate-900/50 border-transparent text-slate-600 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-300'}
                                 `}>
                                     <input
                                         type="checkbox"
@@ -280,7 +299,7 @@ export default function Dashboard({ cookies, onLogout }: DashboardProps) {
                                         onChange={() => handleCategoryToggle(cat.id)}
                                         className="hidden" // Hiding default checkbox for custom style
                                     />
-                                    <div className={`w-3 h-3 rounded-full border flex items-center justify-center flex-shrink-0 transition-colors ${selectedCategories.includes(cat.id) ? 'bg-indigo-500 border-indigo-500' : 'border-slate-600'}`}>
+                                    <div className={`w-3 h-3 rounded-full border flex items-center justify-center flex-shrink-0 transition-colors ${selectedCategories.includes(cat.id) ? 'bg-indigo-500 border-indigo-500' : 'border-slate-300 dark:border-slate-600'}`}>
                                         {selectedCategories.includes(cat.id) && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
                                     </div>
                                     <span className="truncate">{cat.name}</span>

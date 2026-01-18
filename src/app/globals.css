@@ -1,35 +1,27 @@
 @import "tailwindcss";
 
-:root {
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 15, 17, 21;
-  --background-end-rgb: 15, 17, 21;
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-200 transition-colors duration-300;
+  }
 }
 
-@theme {
-  --color-gray-900: #0f1115;
-}
-
-body {
-  color: rgb(var(--foreground-rgb));
-  background: transparent;
-}
-
-/* Custom Scrollbar */
+/* Custom Scrollbar - Light Mode Default */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0f172a;
+  @apply bg-slate-100 dark:bg-slate-900;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 9999px;
+  @apply bg-slate-300 dark:bg-slate-700 rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  @apply bg-slate-400 dark:bg-slate-600;
 }
