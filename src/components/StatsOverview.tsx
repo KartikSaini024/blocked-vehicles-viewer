@@ -29,17 +29,17 @@ export default function StatsOverview({ data }: StatsOverviewProps) {
     ];
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-3 gap-2 md:gap-4 mb-4 md:mb-8">
             {statItems.map((stat, idx) => (
                 <motion.div
                     key={idx}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.1 }}
-                    className={`p-4 rounded-xl border ${stat.bg} ${stat.border} backdrop-blur-sm shadow-sm dark:shadow-lg transition-colors`}
+                    className={`p-2 md:p-4 rounded-xl border ${stat.bg} ${stat.border} backdrop-blur-sm shadow-sm dark:shadow-lg transition-colors text-center md:text-left`}
                 >
-                    <p className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider">{stat.label}</p>
-                    <p className={`text-2xl font-black mt-1 ${stat.color}`}>{stat.value}</p>
+                    <p className="text-slate-500 dark:text-slate-400 text-[10px] md:text-xs font-bold uppercase tracking-wider truncate">{stat.label}</p>
+                    <p className={`text-lg md:text-2xl font-black mt-0.5 md:mt-1 ${stat.color}`}>{stat.value}</p>
                 </motion.div>
             ))}
         </div>

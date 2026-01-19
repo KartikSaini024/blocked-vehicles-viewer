@@ -18,6 +18,7 @@ export const metadata: Metadata = {
 };
 
 import { ThemeProvider } from "@/context/ThemeContext";
+import Footer from "@/components/Footer";
 
 export default function RootLayout({
   children,
@@ -27,10 +28,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen transition-colors duration-300`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen overflow-hidden transition-colors duration-300 flex flex-col`}
       >
         <ThemeProvider>
-          {children}
+          <main className="flex-1 overflow-y-auto w-full relative z-0">
+            {children}
+          </main>
+          <Footer />
         </ThemeProvider>
       </body>
     </html>

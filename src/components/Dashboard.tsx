@@ -27,6 +27,17 @@ export default function Dashboard({ cookies, onLogout }: DashboardProps) {
 
     useEffect(() => {
         setSelectedCategories([]); // Default to None
+
+        // Default to tiles on mobile
+        const handleResize = () => {
+            if (window.innerWidth < 768) {
+                setViewMode('tiles');
+            }
+        };
+
+        handleResize(); // Check on mount
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
     }, []);
 
     const handleFetch = async () => {
@@ -130,7 +141,7 @@ export default function Dashboard({ cookies, onLogout }: DashboardProps) {
     });
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-200 selection:bg-indigo-500/30 transition-colors duration-300">
+        <div className="min-h-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-200 selection:bg-indigo-500/30 transition-colors duration-300">
             {/* Ambient Background Glow */}
             <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-50 dark:opacity-100 transition-opacity">
                 <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-500/10 rounded-full blur-[100px]" />
@@ -139,38 +150,38 @@ export default function Dashboard({ cookies, onLogout }: DashboardProps) {
 
             {/* Header */}
             <header className="sticky top-0 z-50 backdrop-blur-xl border-b border-slate-200 dark:border-white/5 bg-white/70 dark:bg-slate-950/80 transition-colors duration-300">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-700 dark:from-indigo-600 dark:to-indigo-800 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 md:h-20 flex flex-row items-center justify-between gap-2 md:gap-0">
+                    <div className="flex items-center gap-3 md:gap-4">
+                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-700 dark:from-indigo-600 dark:to-indigo-800 flex items-center justify-center shadow-lg shadow-indigo-500/20 shrink-0">
+                            <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                             </svg>
                         </div>
                         <div>
-                            <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Blocked Vehicles</h1>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Fleet Maintenance Overview</p>
+                            <h1 className="text-base md:text-xl font-bold text-slate-900 dark:text-white tracking-tight leading-tight">Blocked Vehicles</h1>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium hidden md:block">Fleet Maintenance Overview</p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 md:gap-4">
                         {/* Theme Toggle */}
                         <button
                             onClick={toggleTheme}
-                            className="p-2 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                            className="p-1.5 md:p-2 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                             title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
                         >
                             {theme === 'light' ? (
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                                 </svg>
                             ) : (
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                                 </svg>
                             )}
                         </button>
 
-                        {/* View Toggle */}
-                        <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-1 flex">
+                        {/* View Toggle (Hidden on Mobile) */}
+                        <div className="hidden md:flex bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-1">
                             <button
                                 onClick={() => setViewMode('cards')}
                                 className={`p-1.5 rounded transition-all ${viewMode === 'cards' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
@@ -192,9 +203,10 @@ export default function Dashboard({ cookies, onLogout }: DashboardProps) {
                         </div>
                         <button
                             onClick={onLogout}
-                            className="px-4 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all flex items-center gap-2 group"
+                            className="px-3 py-1.5 md:px-4 md:py-2 text-xs font-semibold text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all flex items-center gap-2 group"
+                            title="Sign Out"
                         >
-                            Sign Out
+                            <span className="hidden md:inline">Sign Out</span>
                             <svg className="w-4 h-4 text-slate-500 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                             </svg>
@@ -212,8 +224,8 @@ export default function Dashboard({ cookies, onLogout }: DashboardProps) {
                         {/* Filters Region */}
                         <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-4">
                             {/* Location */}
-                            <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest pl-1">Location</label>
+                            <div>
+                                <label className="block text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest pl-1 mb-1.5">Location</label>
                                 <select
                                     value={locationId}
                                     onChange={(e) => setLocationId(Number(e.target.value))}
@@ -268,7 +280,7 @@ export default function Dashboard({ cookies, onLogout }: DashboardProps) {
                                 <button
                                     onClick={handleFetch}
                                     disabled={loading}
-                                    className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-xl font-bold text-sm shadow-xl shadow-indigo-500/20 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                    className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-xl font-bold text-sm shadow-xl shadow-indigo-500/20 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 py-2.5"
                                 >
                                     {loading ? (
                                         <>
