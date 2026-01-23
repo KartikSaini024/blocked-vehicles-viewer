@@ -8,6 +8,7 @@ import StatsOverview from './StatsOverview';
 import DatePickerPopover from './DatePickerPopover';
 import { BlockedReservation } from '@/types';
 import { useTheme } from '@/context/ThemeContext';
+import { isBlockedToday } from '@/lib/dateUtils';
 
 interface DashboardProps {
     cookies: string[];
@@ -20,6 +21,7 @@ export default function Dashboard({ cookies, onLogout }: DashboardProps) {
     const [toDate, setToDate] = useState<Date | undefined>(addMonths(new Date(), 1));
     const [locationId, setLocationId] = useState(9); // Default Sydney
     const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+    const [showBlockedToday, setShowBlockedToday] = useState(false);
 
     const [data, setData] = useState<BlockedReservation[]>([]);
     const [loading, setLoading] = useState(false);
@@ -104,41 +106,48 @@ export default function Dashboard({ cookies, onLogout }: DashboardProps) {
         setSortOption(option as any);
     };
 
-    const sortedData = [...data].sort((a, b) => {
-        if (sortOption === 'date-asc' || sortOption === 'date-desc') {
-            // Parses "dd/MM/yyyy HH:mm:ss" - Assuming format in API response needs parsing if date object isn't standard
-            // However, typical JS Date parsing might fail on dd/MM/yyyy.
-            // Let's rely on standard comparison if string is ISO, otherwise we might need a parser helper. 
-            // Given previous code didn't show parsing, let's assume standard string sort works or date string is sortable?
-            // Wait, RCM usually returns dd/MM/yyyy HH:mm:ss. We need to be careful.
-            // Let's do a simple text comparison for now if format is YYYY-MM-DD or assume it works, 
-            // OR better, parse it manually to timestamp for robustness. 
-            // Example: "14/01/2026 10:00:00"
-            const parseDate = (d: string) => {
-                if (!d) return 0;
-                const parts = d.split(' ');
-                if (parts.length < 1) return 0;
-                const dateParts = parts[0].split('/');
-                if (dateParts.length < 3) return 0;
-                const timeParts = parts[1] ? parts[1].split(':') : [0, 0, 0];
-                return new Date(
-                    Number(dateParts[2]),
-                    Number(dateParts[1]) - 1,
-                    Number(dateParts[0]),
-                    Number(timeParts[0] || 0),
-                    Number(timeParts[1] || 0)
-                ).getTime();
-            };
+    const sortedData = [...data]
+        .filter(item => {
+            if (showBlockedToday) {
+                return isBlockedToday(item.pickupdatetime, item.dropoffdatetime);
+            }
+            return true;
+        })
+        .sort((a, b) => {
+            if (sortOption === 'date-asc' || sortOption === 'date-desc') {
+                // Parses "dd/MM/yyyy HH:mm:ss" - Assuming format in API response needs parsing if date object isn't standard
+                // However, typical JS Date parsing might fail on dd/MM/yyyy.
+                // Let's rely on standard comparison if string is ISO, otherwise we might need a parser helper. 
+                // Given previous code didn't show parsing, let's assume standard string sort works or date string is sortable?
+                // Wait, RCM usually returns dd/MM/yyyy HH:mm:ss. We need to be careful.
+                // Let's do a simple text comparison for now if format is YYYY-MM-DD or assume it works, 
+                // OR better, parse it manually to timestamp for robustness. 
+                // Example: "14/01/2026 10:00:00"
+                const parseDate = (d: string) => {
+                    if (!d) return 0;
+                    const parts = d.split(' ');
+                    if (parts.length < 1) return 0;
+                    const dateParts = parts[0].split('/');
+                    if (dateParts.length < 3) return 0;
+                    const timeParts = parts[1] ? parts[1].split(':') : [0, 0, 0];
+                    return new Date(
+                        Number(dateParts[2]),
+                        Number(dateParts[1]) - 1,
+                        Number(dateParts[0]),
+                        Number(timeParts[0] || 0),
+                        Number(timeParts[1] || 0)
+                    ).getTime();
+                };
 
-            const dateA = parseDate(a.pickupdatetime);
-            const dateB = parseDate(b.pickupdatetime);
-            return sortOption === 'date-asc' ? dateA - dateB : dateB - dateA;
-        } else {
-            const daysA = Number(a.rentaldays);
-            const daysB = Number(b.rentaldays);
-            return sortOption === 'days-asc' ? daysA - daysB : daysB - daysA;
-        }
-    });
+                const dateA = parseDate(a.pickupdatetime);
+                const dateB = parseDate(b.pickupdatetime);
+                return sortOption === 'date-asc' ? dateA - dateB : dateB - dateA;
+            } else {
+                const daysA = Number(a.rentaldays);
+                const daysB = Number(b.rentaldays);
+                return sortOption === 'days-asc' ? daysA - daysB : daysB - daysA;
+            }
+        });
 
     return (
         <div className="min-h-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-200 selection:bg-indigo-500/30 transition-colors duration-300">
@@ -219,7 +228,7 @@ export default function Dashboard({ cookies, onLogout }: DashboardProps) {
 
 
                 {/* Main Filter & Control Bar */}
-                <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-white/10 shadow-xl dark:shadow-2xl rounded-2xl p-1 mb-8 transition-colors duration-300">
+                <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-white/10 shadow-xl dark:shadow-2xl rounded-2xl p-1 mb-8 transition-colors duration-300 relative z-20">
                     <div className="p-5 grid grid-cols-1 lg:grid-cols-12 gap-6">
                         {/* Filters Region */}
                         <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -277,6 +286,15 @@ export default function Dashboard({ cookies, onLogout }: DashboardProps) {
                                     <option value="days-desc">Duration: Longest</option>
                                     <option value="days-asc">Duration: Shortest</option>
                                 </select>
+                                <button
+                                    onClick={() => setShowBlockedToday(!showBlockedToday)}
+                                    className={`px-3 py-2.5 rounded-xl border text-sm font-medium transition-all ${showBlockedToday
+                                            ? 'bg-emerald-50 dark:bg-emerald-500/20 border-emerald-200 dark:border-emerald-500/50 text-emerald-700 dark:text-emerald-200'
+                                            : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-700/50 text-slate-600 dark:text-slate-400 hover:border-indigo-500/30'
+                                        }`}
+                                >
+                                    Blocked Today
+                                </button>
                                 <button
                                     onClick={handleFetch}
                                     disabled={loading}
