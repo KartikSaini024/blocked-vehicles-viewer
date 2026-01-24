@@ -68,7 +68,7 @@ export default function StatsOverview({ data }: StatsOverviewProps) {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.1 }}
-                    className={`relative p-2 md:p-4 rounded-xl border ${stat.bg} ${stat.border} backdrop-blur-sm shadow-sm dark:shadow-lg transition-colors text-center md:text-left group cursor-help`}
+                    className={`relative p-2 md:p-4 rounded-xl border ${stat.bg} ${stat.border} backdrop-blur-sm shadow-sm dark:shadow-lg transition-colors text-center md:text-left group cursor-help ${hoveredIdx === idx ? 'z-50' : 'z-10'}`}
                     onMouseEnter={() => setHoveredIdx(idx)}
                     onMouseLeave={() => setHoveredIdx(null)}
                 >
