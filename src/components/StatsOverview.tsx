@@ -46,7 +46,7 @@ export default function StatsOverview({ data }: StatsOverviewProps) {
             color: 'text-emerald-600 dark:text-emerald-400',
             bg: 'bg-emerald-50 dark:bg-emerald-500/10',
             border: 'border-emerald-200 dark:border-emerald-500/20',
-            tooltip: 'Vehicles that are currentlyblocked today.'
+            tooltip: 'Vehicles that are currently blocked today.'
         },
         {
             label: 'Primary Issues',
